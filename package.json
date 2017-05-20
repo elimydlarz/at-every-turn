@@ -1,0 +1,34 @@
+{
+  "name": "at-every-turn",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.babel.js",
+  "scripts": {
+    "test": "mocha **/*.spec.js",
+    "babel": "babel index.js -o index.babel.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/elimydlarz/at-every-turn.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/elimydlarz/at-every-turn/issues"
+  },
+  "homepage": "https://github.com/elimydlarz/at-every-turn#readme",
+  "devDependencies": {
+    "babel-cli": "^6.24.1",
+    "babel-preset-env": "^1.4.0",
+    "mocha": "^3.4.1",
+    "sinon": "^2.2.0"
+  },
+  "files": [
+    "index.babel.js"
+  ],
+  "babel": {
+    "presets": [
+      "env"
+    ]
+  }
+}
