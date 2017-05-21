@@ -30,4 +30,4 @@ Will produce this console output:
 2
 ```
 
-It also handles `catch` and the use of `then` with `onFulfilled` and `onRejected` params.
+All promise behaviour is handled, including: `catch`, the use of `then` with `onFulfilled` and `onRejected` params, rejection of a `then` and rejection of the initial promise.
