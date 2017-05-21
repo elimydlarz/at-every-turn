@@ -19,7 +19,7 @@ const atEveryTurn = require('at-every-turn');
 
 atEveryTurn(console.log, Promise.resolve(0))
   .then((x) => x + 1)
-  .then((x) => x + 1)
+  .then((x) => x + 1);
 ```
 
 Will produce this console output:

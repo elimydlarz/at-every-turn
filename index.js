@@ -1,25 +1,26 @@
-const wrap = (fn, promise) => {
-  const applyFn = (result) => {
-    fn(result);
-    return result;
-  };
+const wrap = (fn, promise) => ({
+  then: (onFulfilled, onRejected) =>
+    wrap(fn, promise.then(onFulfilled, onRejected)
+      .then((result) => {
+        fn(result);
+        return result;
+      })),
+  catch: onRejected =>
+    wrap(fn, promise.catch(onRejected)
+      .then((result) => {
+        fn(result);
+        return result;
+      })),
+});
 
-  return {
-    then: (thenner, catcher) => wrap(fn, promise.then(thenner, catcher).then(applyFn, applyFn)),
-    catch: (catcher) => wrap(fn, promise.then(catcher).catch(applyFn)),
-  };
-};
-
-module.exports = (fn, promise) => {
-  const applyFn = (result) => {
-    fn(result);
-    return result;
-  };
-
-  const applyFnAndReject = (result) => {
-    fn(result);
-    return Promise.reject(result);
-  };
-
-  return wrap(fn, promise.then(applyFn, applyFnAndReject));
-};
+module.exports = (fn, promise) =>
+  wrap(fn, promise.then(
+    (result) => {
+      fn(result);
+      return result;
+    },
+    (result) => {
+      fn(result);
+      return Promise.reject(result);
+    },
+  ));

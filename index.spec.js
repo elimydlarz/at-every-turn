@@ -3,7 +3,7 @@ const sinon = require('sinon');
 
 const atEveryTurn = require('./index');
 
-describe('at-every-turn', () => {
+describe.only('at-every-turn', () => {
   let spy;
 
   beforeEach(() => {
@@ -15,55 +15,88 @@ describe('at-every-turn', () => {
       assert.equal(0, spy.getCall(0).args[0]);
       assert.equal(1, spy.getCall(1).args[0]);
       assert.equal(2, spy.getCall(2).args[0]);
-      assert.equal(result, 2);
+      assert.equal(2, result);
       done();
     };
 
     atEveryTurn(spy, Promise.resolve(0))
-      .then((x) => x + 1)
-      .then((x) => x + 1)
+      .then(x => x + 1)
+      .then(x => x + 1)
       .then(test);
   });
 
   context('when a then fails', () => {
-    it('still executes your function without ruining anything', () => {
-      const test = (result) => {
-        assert.equal(0, spy.getCall(0).args[0]);
-        assert.equal(1, spy.getCall(1).args[0]);
-        assert.equal(2, spy.getCall(2).args[0]);
-        assert.equal(3, spy.getCall(3).args[0]);
-        assert.equal(result, 3);
-        done();
-      };
+    describe('atEveryTurn', () => {
+      it('does not evaluate thens between the failing then and the catch', (done) => {
+        const test = (result) => {
+          assert.equal(0, spy.getCall(0).args[0]);
+          assert.equal(1, spy.getCall(1).args[0]);
+          assert.equal(3, spy.getCall(2).args[0]);
+          assert.equal(3, result);
+          done();
+        };
 
-      atEveryTurn(spy, Promise.resolve(0))
-        .then((x) => x + 1)
-        .then((x) => Promise.reject(x + 1))
-        .then(() => 'skipped because of promise rejection')
-        .catch((x) => x + 1)
+        atEveryTurn(spy, Promise.resolve(0))
+        .then(x => x + 1)
+        .then(x => Promise.reject(x + 1))
+        .then(() => -1)
+        .catch(x => x + 1)
         .then(test);
+      });
+    });
+
+    describe('regular promise chains', () => {
+      it('does not evaluate thens between the failing then and the catch', (done) => {
+        const test = (result) => {
+          assert.equal(false, spy.called);
+          assert.equal(3, result);
+          done();
+        };
+
+        Promise.resolve(0)
+          .then(x => x + 1)
+          .then(x => Promise.reject(x + 1))
+          .then(() => { spy(); return -1; })
+          .catch(x => x + 1)
+          .then(test);
+      });
     });
   });
 
   context('when a catch fails', () => {
-    it('still executes your function without ruining anything', () => {
-      const test = (result) => {
-        assert.equal(0, spy.getCall(0).args[0]);
-        assert.equal(1, spy.getCall(1).args[0]);
-        assert.equal(2, spy.getCall(2).args[0]);
-        assert.equal(result, 2);
-        done();
-      };
+    describe('atEveryTurn', () => {
+      it('struggles', (done) => {
+        const test = (result) => {
+          assert.equal(0, spy.getCall(0).args[0]);
+          assert.equal(1, spy.getCall(1).args[0]);
+          assert.equal(1, result);
+          done();
+        };
 
-      atEveryTurn(spy, Promise.resolve(0))
-        .then((x) => x + 1)
-        .catch((x) => Promise.reject(x + 1))
-        .then(test);
+        atEveryTurn(spy, Promise.resolve(0))
+          .then(x => x + 1)
+          .catch(() => Promise.reject(-1))
+          .then(test);
+      });
+    });
+
+    describe('regular promise chains', () => {
+      it('struggle', (done) => {
+        const test = (result) => {
+          assert.equal(result, 1);
+          done();
+        };
+
+        Promise.resolve(0)
+          .then(x => x + 1)
+          .catch(() => Promise.reject(-1))
+          .then(test);
+      });
     });
   });
 
   context('when the initial promise fails', () => {
-    it('still executes your function without ruining anything', () => {
+    it('still executes your function without ruining anything', (done) => {
       const test = (result) => {
         assert.equal(0, spy.getCall(0).args[0]);
         assert.equal(0, result);
@@ -76,8 +109,8 @@ describe('at-every-turn', () => {
   });
 
   context('when then receives both onFulfilled and onRejected params', () => {
-    const onFulfilled = (n) => n + 1;
-    const onRejected = (n) => n - 1;
+    const onFulfilled = n => n + 1;
+    const onRejected = n => n - 1;
 
     context('and the initial promise is resolved', () => {
       it('still executes your function without ruining anything', (done) => {
